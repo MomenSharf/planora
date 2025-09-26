@@ -1,4 +1,5 @@
 import Logo from "@/components/Layout/Logo";
+import Link from "next/link";
 import React from "react";
 
 export default function Layout({
@@ -9,7 +10,9 @@ export default function Layout({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 min-h-screen">
       <div className="flex flex-col p-3">
-        <Logo />
+        <Link href="/">
+          <Logo />
+        </Link>
         <div className="flex-1">{children}</div>
       </div>
       <div

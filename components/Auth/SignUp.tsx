@@ -11,10 +11,13 @@ import { Input } from "@/components/ui/input";
 import { SignUpInput, signUpSchema } from "@/lib/validation/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import AuthWrapper from "../AuthWrapper";
+import AuthWrapper from "./AuthWrapper";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function SignUp() {
+  const [showPassword, setShowPassword] = useState(false);
   const form = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -63,7 +66,22 @@ export default function SignUp() {
             <FormItem className="mb-4">
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input placeholder="Minimum 8 characters" {...field} />
+                <div className="flex items-center">
+                  <Input
+                    placeholder="Minimum 8 characters"
+                    type={showPassword ? "text" : "password"}
+                    className="rounded-r-none border-r-0"
+                    {...field}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="border-l-0 rounded-l-none"
+                  >
+                    {showPassword ? <EyeOff /> : <Eye />}
+                  </Button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>

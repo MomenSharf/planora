@@ -1,8 +1,7 @@
 import React from "react";
-import { Form } from "../ui/form";
-import { Separator } from "../ui/separator";
-import { Button } from "../ui/button";
 import { Icons } from "../icons";
+import { Button } from "../ui/button";
+import { Separator } from "../ui/separator";
 
 export default function AuthWrapper({
   title,
@@ -26,7 +25,7 @@ export default function AuthWrapper({
           <div className="flex-1">{children}</div>
           <div className="relative mt-2">
             <Separator />
-            <span className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 bg-background px-2 text-sm text-muted-foreground">
+            <span className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
               Or Continue With
             </span>
           </div>
