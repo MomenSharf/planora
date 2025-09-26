@@ -54,21 +54,26 @@ export default function Login() {
             <FormItem className="mb-2">
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <div className="flex items-center">
+                <div className="relative">
                   <Input
                     placeholder="Minimum 8 characters"
                     type={showPassword ? "text" : "password"}
-                    className="rounded-r-none border-r-0"
+                    className="pr-10"
                     {...field}
                   />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="border-l-0 rounded-l-none"
-                  >
-                    {showPassword ? <EyeOff /> : <Eye />}
-                  </Button>
+                   <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="absolute right-0 top-0  rounded-tl-none rounded-bl-none rounded-tr-md rounded-br-md bg-background focus:ring-0 -z-[-2]"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-3 h-3" />
+                      )}
+                    </Button>
                 </div>
               </FormControl>
               <FormMessage />
