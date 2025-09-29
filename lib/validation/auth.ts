@@ -44,3 +44,15 @@ export const resetPasswordSchema = z
   });
 
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+/**
+ * Verify Code Schema
+ */
+export const VerifyCodeSchema = z.object({
+  code: z
+    .string()
+    .length(6, "Code must be 6 digits")
+    .regex(/^\d+$/, "Only numbers allowed"),
+});
+
+export type VerifyCodeInput = z.infer<typeof VerifyCodeSchema>;

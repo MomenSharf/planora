@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -8,17 +9,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { SignUpAction } from "@/lib/actions/singup.actions";
 import { SignUpInput, signUpSchema } from "@/lib/validation/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import AuthWrapper from "./AuthWrapper";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { toast } from "sonner";
-import { error } from "console";
-import { SignUpAction } from "@/lib/actions/singup.action";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import AuthWrapper from "./AuthWrapper";
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
@@ -92,7 +91,7 @@ export default function SignUp() {
                 <FormControl>
                   <div className="relative">
                     <Input
-                      placeholder="Minimum 8 characters"
+                      placeholder="minimum 8 characters"
                       type={showPassword ? "text" : "password"}
                       className="pr-10"
                       {...field}

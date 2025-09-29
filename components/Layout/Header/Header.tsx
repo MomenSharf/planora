@@ -5,12 +5,16 @@ import NavigationMenuNav from "./NavigationMenu";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Logo from "../Logo";
+import { getCurrentUser } from "@/lib/auth";
+import SignOut from "./SignOut";
 
-export default function Header() {
+export default async function Header() {
+  const session = await getCurrentUser();
   return (
     <header>
       <div className="flex items-center justify-between py-4 max-sm:p-2">
         <Logo />
+        <div>{session && session.user.name}</div>
         <div className="hidden lg:flex gap-1">
           <NavigationMenuNav />
         </div>
@@ -31,6 +35,7 @@ export default function Header() {
             >
               SignUp
             </Link>
+            <SignOut />
           </div>
         </div>
         <div className="lg:hidden">

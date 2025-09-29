@@ -7,6 +7,7 @@ declare module "next-auth" {
       email: string;
       name?: string | null;
       image?: string | null;
+      emailVerified?: Date | null;
     } & DefaultSession["user"];
   }
 
@@ -16,6 +17,7 @@ declare module "next-auth" {
     name?: string | null;
     image?: string | null;
     hashedPassword?: string | null;
+    emailVerified?: Date | null;
   }
 }
 

@@ -2,6 +2,7 @@ import React from "react";
 import { Icons } from "../icons";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
+import Link from "next/link";
 
 export default function AuthWrapper({
   title,
@@ -39,16 +40,16 @@ export default function AuthWrapper({
           <p>
             {" "}
             Don&apos;t have an account?{" "}
-            <a href="/signup" className="underline">
+            <Link href="/signup" className="underline text-primary">
               Sign up
-            </a>
+            </Link>
           </p>
         ) : (
           <p>
             Already have an account?{" "}
-            <a href="/login" className="underline text-primary">
+            <Link href="/login" className="underline text-primary">
               Log in
-            </a>
+            </Link>
           </p>
         )}
       </div>

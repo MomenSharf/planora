@@ -16,6 +16,8 @@ import AuthWrapper from "./AuthWrapper";
 import Link from "next/link";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,6 +29,25 @@ export default function Login() {
       password: "",
     },
   });
+
+  const onSubmit = async (data: LoginInput) => {
+    try {
+      const res = await signIn("credentials", {
+        // redirect: false,
+        email: data.email,
+        password: data.password,
+
+      });
+
+      if (res?.error) {
+        toast.error(res.error);
+      } else {
+        toast.success("Login successful!");
+      }
+    } catch (error) {
+      toast.error("Something went wrong! try again later");
+    }
+  }
   return (
     <AuthWrapper
       title="Welcome Back 👋"
@@ -34,6 +55,7 @@ export default function Login() {
       variant="login"
     >
       <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
         <FormField
           control={form.control}
           name="email"
@@ -56,24 +78,24 @@ export default function Login() {
               <FormControl>
                 <div className="relative">
                   <Input
-                    placeholder="Minimum 8 characters"
+                    placeholder="minimum 8 characters"
                     type={showPassword ? "text" : "password"}
                     className="pr-10"
                     {...field}
                   />
-                   <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="absolute right-0 top-0  rounded-tl-none rounded-bl-none rounded-tr-md rounded-br-md bg-background focus:ring-0 -z-[-2]"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-3 h-3" />
-                      )}
-                    </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="absolute right-0 top-0  rounded-tl-none rounded-bl-none rounded-tr-md rounded-br-md bg-background focus:ring-0 -z-[-2]"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-3 h-3" />
+                    )}
+                  </Button>
                 </div>
               </FormControl>
               <FormMessage />
@@ -86,9 +108,15 @@ export default function Login() {
         >
           Forgot Password?
         </Link>
-        <Button className="w-full" size="lg">
+        <Button
+          className="w-full cursor-pointer"
+          size="lg"
+          type="submit"
+          disabled={form.formState.isSubmitting}
+        >
           Login
         </Button>
+        </form>
       </Form>
     </AuthWrapper>
   );
