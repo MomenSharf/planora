@@ -20,14 +20,23 @@ import {
 } from "@/lib/actions/verification-email";
 import { VerifyCodeInput, VerifyCodeSchema } from "@/lib/validation/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Mail, MailCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-export default function VerifyCode({ email }: { email?: string }) {
+import Countdown from "react-countdown";
+
+export default function VerifyCode({
+  email,
+  initialCooldown = 0,
+}: {
+  email?: string;
+  initialCooldown?: number;
+}) {
   const [isPending, startTransition] = useTransition();
+  const [cooldown, setCooldown] = useState(initialCooldown); // countdown state
 
   const router = useRouter();
 
@@ -50,12 +59,12 @@ export default function VerifyCode({ email }: { email?: string }) {
       } else {
         toast.error(res.message || "Invalid code");
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error: unknown) {
+    } catch {
       toast.error("Something went wrong! try again later");
     }
   };
 
+  // Auto-submit when 6 digits entered
   useEffect(() => {
     const subscription = form.watch((value) => {
       if (value.code?.length === 6) {
@@ -65,13 +74,38 @@ export default function VerifyCode({ email }: { email?: string }) {
     return () => subscription.unsubscribe();
   }, [form]);
 
+  const handleResend = async () => {
+    if (!email) {
+      toast.error("Email is required");
+      return;
+    }
+
+    startTransition(async () => {
+      const res = await resendVerificationEmail(email!);
+
+      if (res?.success) {
+        toast.success("Verification email resent!");
+        setCooldown(60); // enforce 1min
+      } else {
+        toast.error(res.message || "Failed to resend email");
+        if ("secondsLeft" in res && typeof res.secondsLeft === "number") {
+          setCooldown(res.secondsLeft); // set remaining cooldown if provided
+        }
+      }
+    });
+  };
+
   return (
     <div className="flex flex-col gap-4 text-center">
+      <Button size="icon" variant="outline" className="size-12 self-center">
+        <MailCheck className="size-6"/>
+      </Button>
       <h1 className="text-2xl font-bold">Enter verification code</h1>
       <h2 className="text-xl">{email}</h2>
       <p className="text-sm text-muted-foreground">
         Please enter the verification code sent to your email.
       </p>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -96,10 +130,6 @@ export default function VerifyCode({ email }: { email?: string }) {
               </FormItem>
             )}
           />
-          <Link className={buttonVariants({ variant: "ghost" })} href="/login">
-            {" "}
-            <ArrowLeft /> back to login
-          </Link>
 
           <Button
             type="submit"
@@ -108,34 +138,38 @@ export default function VerifyCode({ email }: { email?: string }) {
           >
             Verify
           </Button>
+
+          <Link className={buttonVariants({ variant: "link" })} href="/login">
+            <ArrowLeft /> back to login
+          </Link>
+          
           <div className="flex justify-center">
             {form.formState.isSubmitting ? (
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
             ) : (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground flex items-center">
                 Didn&apos;t receive a code?
-                <Button
-                  variant="link"
-                  size="sm"
-                  className="text-xs p-0 ml-1 cursor-pointer"
-                  disabled={isPending || form.formState.isSubmitting}
-                  onClick={() =>
-                    startTransition(async () => {
-                      if (!email) {
-                        toast.error("Email is required");
-                        return;
-                      }
-                      const res = await resendVerificationEmail(email!);
-                      if (res?.success) {
-                        toast.success("Verification email resent!");
-                      } else {
-                        toast.error(res.message || "Failed to resend email");
-                      }
-                    })
-                  }
-                >
-                  Resend
-                </Button>
+                {cooldown > 0 ? (
+                  <Countdown
+                    date={Date.now() + cooldown * 1000}
+                    renderer={({ seconds }) => (
+                      <span className="ml-2 text-primary">
+                        Resend in {seconds}s
+                      </span>
+                    )}
+                    onComplete={() => setCooldown(0)}
+                  />
+                ) : (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="text-xs p-0 ml-1 cursor-pointer"
+                    disabled={isPending || form.formState.isSubmitting}
+                    onClick={handleResend}
+                  >
+                    Resend
+                  </Button>
+                )}
               </p>
             )}
           </div>

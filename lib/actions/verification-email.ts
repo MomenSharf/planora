@@ -3,7 +3,6 @@
 import { sendVerificationEmail } from "../mailer";
 import { db } from "../prisma";
 
-
 // Save verification code to DB (delete old first)
 export const createAndSendVerificationCode = async (email: string) => {
   try {
@@ -37,6 +36,28 @@ export const createAndSendVerificationCode = async (email: string) => {
 
 export const resendVerificationEmail = async (email: string) => {
   try {
+    // Get latest verification code for this email
+    const lastCode = await db.verificationCode.findFirst({
+      where: { email },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // ⏳ Add 1-minute hold logic
+    if (
+      lastCode &&
+      new Date().getTime() - lastCode.createdAt.getTime() < 60 * 1000
+    ) {
+      const secondsLeft =
+        60 -
+        Math.floor(
+          (new Date().getTime() - lastCode.createdAt.getTime()) / 1000
+        );
+      return {
+        success: false,
+        message: `Please wait ${secondsLeft}s before requesting a new code.`,
+        secondsLeft,
+      };
+    }
     // Delete old codes for this email
     await db.verificationCode.deleteMany({ where: { email } });
 
@@ -56,11 +77,11 @@ export const verifyCode = async (email: string, code: string) => {
       orderBy: { createdAt: "desc" },
     });
     if (!record)
-      return { success: false, message: "No code found for this email." };  
+      return { success: false, message: "No code found for this email." };
     if (record.expiresAt < new Date()) {
       await db.verificationCode.delete({ where: { id: record.id } });
       return {
-        success: false, 
+        success: false,
         message: "Code expired, request a new one.",
       };
     }
@@ -76,10 +97,30 @@ export const verifyCode = async (email: string, code: string) => {
     });
 
     await db.verificationCode.deleteMany({ where: { email } });
-    
+
     return { success: true, message: "Code verified." };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error: unknown) {
     return { success: false, message: "Failed to verify code." };
   }
-}
+};
+
+export const getResendCooldown = async (email: string) => {
+  try {
+    const lastCode = await db.verificationCode.findFirst({
+      where: { email },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!lastCode) {
+      return { secondsLeft: 0 };
+    }
+
+    const diff = new Date().getTime() - lastCode.createdAt.getTime();
+    const secondsLeft = diff < 60 * 1000 ? 60 - Math.floor(diff / 1000) : 0;
+
+    return { secondsLeft };
+  } catch {
+    return { secondsLeft: 0 };
+  }
+};

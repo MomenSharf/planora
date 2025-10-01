@@ -1,4 +1,5 @@
 import VerifyCode from "@/components/Auth/VerifyCode";
+import { getResendCooldown } from "@/lib/actions/verification-email";
 import { getCurrentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -17,9 +18,12 @@ export default async function page({
     return redirect("/login");
   }
 
+    const { secondsLeft } = await getResendCooldown(searchParams.email);
+
+
   return (
     <div className="flex items-center justify-center h-full">
-      <VerifyCode email={searchParams.email} />
+      <VerifyCode email={searchParams.email} initialCooldown={secondsLeft} />
     </div>
   );
 }

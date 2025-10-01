@@ -56,3 +56,4 @@ export const VerifyCodeSchema = z.object({
 });
 
 export type VerifyCodeInput = z.infer<typeof VerifyCodeSchema>;
+
