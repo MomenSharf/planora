@@ -14,10 +14,8 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import {
-  resendVerificationEmail,
-  verifyCode,
-} from "@/lib/actions/verification-email";
+import { resendVerificationEmail, verifyCode } from "@/lib/actions/auth/verification-email";
+
 import { VerifyCodeInput, VerifyCodeSchema } from "@/lib/validation/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2, MailCheck } from "lucide-react";

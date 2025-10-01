@@ -1,11 +1,10 @@
 "use server";
 
 import { db } from "@/lib/prisma";
+import { SignUpInput, signUpSchema } from "@/lib/validation/auth";
 import { hash } from "bcrypt";
-import { randomInt } from "crypto";
-import { handleError } from "../errorHandler";
-import { SignUpInput, signUpSchema } from "../validation/auth";
 import { createAndSendVerificationCode } from "./verification-email";
+import { handleError } from "@/lib/errorHandler";
 
 export const SignUpAction = async (data: SignUpInput) => {
   try {

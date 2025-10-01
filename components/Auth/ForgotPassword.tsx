@@ -19,6 +19,9 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
+import { toast } from "sonner";
+import { sendResetPasswordEmail } from "@/lib/mailer";
+import { createAndSendPasswordResetToken } from "@/lib/actions/auth/forgot-password";
 
 export default function ForgotPassword() {
   const router = useRouter();
@@ -28,24 +31,21 @@ export default function ForgotPassword() {
     defaultValues: { email: "" },
   });
 
-  const onSubmit = async (data: ForgotPasswordInput) => {};
-  //   try {
-  //     if (!email) {
-  //       toast.error("Email is required");
-  //       return;
-  //     }
-  //     const res = await verifyCode(email!, data.code);
+  const onSubmit = async (data: ForgotPasswordInput) => {
+    try {
+  const res = await createAndSendPasswordResetToken(data.email)
+      // const res = await verifyCode(email!, data.code);
 
-  //     if (res?.success) {
-  //       toast.success("Login successful!");
-  //       router.push("/");
-  //     } else {
-  //       toast.error(res.message || "Invalid code");
-  //     }
-  //   } catch {
-  //     toast.error("Something went wrong! try again later");
-  //   }
-  // };
+      if (res?.success) {
+        toast.success("Reset password link send successfuly");
+        router.push("/login");
+      } else {
+        toast.error(res.message || "Invalid token");
+      }
+    } catch {
+      toast.error("Something went wrong! try again later");
+    }
+  };
 
   return (
     <div className="flex flex-col gap-5 text-center">

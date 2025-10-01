@@ -9,7 +9,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { SignUpAction } from "@/lib/actions/singup.actions";
+import { SignUpAction } from "@/lib/actions/auth/singup.actions";
 import { SignUpInput, signUpSchema } from "@/lib/validation/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";

@@ -9,54 +9,47 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { LoginInput, loginSchema } from "@/lib/validation/auth";
+import { ResetPasswordInput, resetPasswordSchema } from "@/lib/validation/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import AuthWrapper from "./AuthWrapper";
+import { resetPassword } from "@/lib/actions/auth/forgot-password";
 
-export default function Login() {
+export default function ResetPassword({token}: {token: string}) {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const router = useRouter();
 
-  const form = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<ResetPasswordInput>({
+    resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  const onSubmit = async (data: LoginInput) => {
+  const onSubmit = useCallback(async (data: ResetPasswordInput) => {
     try {
-      const res = await signIn("credentials", {
-        redirect: false,
-        email: data.email,
-        password: data.password,
-      });
+    
+      const res = await resetPassword({token, ...data});
 
-      console.log(res);
-
-      if (res?.ok) {
-        if (res.url) {
-          router.push(res.url);
-        } else {
-          toast.success("Login successful!");
-        }
+      if (res?.success) {
+        toast.success("Password reset successful!");
+        router.push("/login");
       } else {
-        toast.error(res?.error || res?.error || "Invalid credentials");
+        toast.error(res.message || "Invalid code");
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error: unknown) {
+    } catch {
       toast.error("Something went wrong! try again later");
     }
-  };
+  }, [token, router]);
   return (
     <AuthWrapper
       title="Welcome Back 👋"
@@ -65,19 +58,7 @@ export default function Login() {
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem className="mb-4">
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="you@example.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+       
           <FormField
             control={form.control}
             name="password"
@@ -111,19 +92,47 @@ export default function Login() {
               </FormItem>
             )}
           />
-          <Link
-            href="/forgot"
-            className="text-xs text-primary underline mb-4 block text-end"
-          >
-            Forgot Password?
-          </Link>
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem className="mb-2">
+                <FormLabel>Confirm Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      placeholder="minimum 8 characters"
+                      type={showConfirmPassword ? "text" : "password"}
+                      className="pr-10"
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="absolute right-0 top-0  rounded-tl-none rounded-bl-none rounded-tr-md rounded-br-md bg-background focus:ring-0 -z-[-2]"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-3 h-3" />
+                      )}
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+         
           <Button
             className="w-full cursor-pointer"
             size="lg"
             type="submit"
             disabled={form.formState.isSubmitting}
           >
-            Login
+            Reset Password
           </Button>
         </form>
       </Form>

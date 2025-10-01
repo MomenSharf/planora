@@ -1,7 +1,8 @@
 "use server";
 
-import { sendVerificationEmail } from "../mailer";
-import { db } from "../prisma";
+import { sendVerificationEmail } from "@/lib/mailer";
+import { db } from "@/lib/prisma";
+
 
 // Save verification code to DB (delete old first)
 export const createAndSendVerificationCode = async (email: string) => {
