@@ -1,9 +1,12 @@
 "use client";
+import { cn } from "@/lib/utils";
 import {
   ForgotPasswordInput,
   forgotPasswordSchema,
 } from "@/lib/validation/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, Fingerprint } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Button, buttonVariants } from "../ui/button";
@@ -16,9 +19,6 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
-import { ArrowLeft, Fingerprint } from "lucide-react";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
 
 export default function ForgotPassword() {
   const router = useRouter();

@@ -11,14 +11,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { LoginInput, loginSchema } from "@/lib/validation/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import AuthWrapper from "./AuthWrapper";
-import Link from "next/link";
-import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { redirect, useRouter } from "next/navigation";
+import AuthWrapper from "./AuthWrapper";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -54,8 +54,6 @@ export default function Login() {
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error: unknown) {
-      console.log(error);
-
       toast.error("Something went wrong! try again later");
     }
   };

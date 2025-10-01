@@ -20,13 +20,13 @@ import {
 } from "@/lib/actions/verification-email";
 import { VerifyCodeInput, VerifyCodeSchema } from "@/lib/validation/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Loader2, Mail, MailCheck } from "lucide-react";
+import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
+import Countdown from "react-countdown";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import Countdown from "react-countdown";
 
 export default function VerifyCode({
   email,
@@ -45,7 +45,7 @@ export default function VerifyCode({
     defaultValues: { code: "" },
   });
 
-  const onSubmit = async (data: VerifyCodeInput) => {
+  const onSubmit = useCallback(async (data: VerifyCodeInput) => {
     try {
       if (!email) {
         toast.error("Email is required");
@@ -62,7 +62,7 @@ export default function VerifyCode({
     } catch {
       toast.error("Something went wrong! try again later");
     }
-  };
+  }, [email, router]);
 
   // Auto-submit when 6 digits entered
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function VerifyCode({
       }
     });
     return () => subscription.unsubscribe();
-  }, [form]);
+  }, [form, onSubmit]);
 
   const handleResend = async () => {
     if (!email) {
@@ -142,7 +142,7 @@ export default function VerifyCode({
           <Link className={buttonVariants({ variant: "link" })} href="/login">
             <ArrowLeft /> back to login
           </Link>
-          
+
           <div className="flex justify-center">
             {form.formState.isSubmitting ? (
               <Loader2 className="h-5 w-5 animate-spin text-primary" />
