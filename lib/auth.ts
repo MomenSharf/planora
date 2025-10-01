@@ -58,6 +58,12 @@ export const authOptions: NextAuthOptions = {
           throw new Error("No user found with the provided credentials");
         }
 
+        // if (!user.emailVerified) {
+        //   throw new Error("Email not verified. Please verify your email.");
+        // }
+
+        //TODO: redirct to verification page if email not verified here
+
         // Verify the password
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
@@ -65,7 +71,12 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Return the user object upon successful validation
-        return { id: user.id, name: user.name ?? "", email: user.email ?? "" };
+        return {
+          id: user.id,
+          name: user.name ?? "",
+          email: user.email ?? "",
+          emailVerified: user.emailVerified ?? null,
+        };
       },
     }),
   ],
@@ -124,8 +135,10 @@ export const authOptions: NextAuthOptions = {
       };
     },
     async signIn({ user }) {
+      console.log(user);
+
       if (!user.emailVerified) {
-        return `/verify?email=${user.email}`; // redirects directly
+        return `${process.env.NEXT_PUBLIC_BASE_URL}/verify?email=${user.email}`;
       }
       return true;
     },

@@ -1,8 +1,13 @@
-import SignUp from '@/components/Auth/SignUp'
-import React from 'react'
+import SignUp from "@/components/Auth/SignUp";
+import { getCurrentUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import React from "react";
 
-export default function page() {
-  return (
-   <SignUp  />
-  )
+export default async function page() {
+  const session = await getCurrentUser();
+
+  if (session) {
+    return redirect("/");
+  }
+  return <SignUp />;
 }

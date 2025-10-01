@@ -4,8 +4,8 @@ import { db } from "@/lib/prisma";
 import { hash } from "bcrypt";
 import { randomInt } from "crypto";
 import { handleError } from "../errorHandler";
-import { sendVerificationEmail } from "../mailer";
 import { SignUpInput, signUpSchema } from "../validation/auth";
+import { createAndSendVerificationCode } from "./verification-email";
 
 export const SignUpAction = async (data: SignUpInput) => {
   try {
@@ -46,33 +46,10 @@ export const SignUpAction = async (data: SignUpInput) => {
       return { success: false, message: "Failed to create user." };
     }
 
-    const code = String(randomInt(100000, 999999));
+    const sendRes = await createAndSendVerificationCode(email);
 
-    const verificationCode = await db.verificationCode.create({
-      data: {
-        email: lowerCaseEmail,
-        code,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes from now
-      },
-    });
-
-    if (!verificationCode) {
-      return {
-        success: false,
-        message: "Failed to generate verification code.",
-      };
-    }
-
-    const res = await sendVerificationEmail({
-      email: lowerCaseEmail,
-      name,
-      code: code,
-      purpose: "Verify your email",
-      expiresInMinutes: 10,
-    });
-
-    if(!res.ok) {
-      return { success: false, message: "Failed to send verification email." };
+    if (!sendRes.success) {
+      return { success: false, message: sendRes.message };
     }
 
     return { success: true, message: "Code sent to email." };
@@ -124,36 +101,3 @@ export async function verifySignupCode({
   }
 }
 
-export async function resendVerificationCode(data: SignUpInput) {
-  try {
-    const { email, name, password } = signUpSchema.parse(data);
-    // delete old codes
-    await db.verificationCode.deleteMany({ where: { email } });
-
-    // generate new 6-digit code
-    const code = String(randomInt(100000, 999999));
-
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 10); // 10 mins
-
-    await db.verificationCode.create({
-      data: {
-        email,
-        code,
-        expiresAt,
-      },
-    });
-
-    // TODO: send code via email service here (nodemailer, resend, etc.)
-    // await sendEmail(email, code);
-
-    return {
-      success: true,
-      message: "Verification code resent successfully.",
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Something went wrong",
-    };
-  }
-}

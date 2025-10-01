@@ -18,9 +18,12 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
+import { redirect, useRouter } from "next/navigation";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+
+  const router = useRouter();
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -33,21 +36,29 @@ export default function Login() {
   const onSubmit = async (data: LoginInput) => {
     try {
       const res = await signIn("credentials", {
-        // redirect: false,
+        redirect: false,
         email: data.email,
         password: data.password,
-
       });
 
-      if (res?.error) {
-        toast.error(res.error);
+      console.log(res);
+
+      if (res?.ok) {
+        if (res.url) {
+          router.push(res.url);
+        } else {
+          toast.success("Login successful!");
+        }
       } else {
-        toast.success("Login successful!");
+        toast.error(res?.error || res?.error || "Invalid credentials");
       }
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error: unknown) {
+      console.log(error);
+
       toast.error("Something went wrong! try again later");
     }
-  }
+  };
   return (
     <AuthWrapper
       title="Welcome Back 👋"
@@ -56,66 +67,66 @@ export default function Login() {
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem className="mb-4">
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input placeholder="you@example.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem className="mb-2">
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input
-                    placeholder="minimum 8 characters"
-                    type={showPassword ? "text" : "password"}
-                    className="pr-10"
-                    {...field}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="absolute right-0 top-0  rounded-tl-none rounded-bl-none rounded-tr-md rounded-br-md bg-background focus:ring-0 -z-[-2]"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-3 h-3" />
-                    )}
-                  </Button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Link
-          href="/forgot-password"
-          className="text-xs text-primary underline mb-4 block text-end"
-        >
-          Forgot Password?
-        </Link>
-        <Button
-          className="w-full cursor-pointer"
-          size="lg"
-          type="submit"
-          disabled={form.formState.isSubmitting}
-        >
-          Login
-        </Button>
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem className="mb-4">
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input placeholder="you@example.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem className="mb-2">
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      placeholder="minimum 8 characters"
+                      type={showPassword ? "text" : "password"}
+                      className="pr-10"
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="absolute right-0 top-0  rounded-tl-none rounded-bl-none rounded-tr-md rounded-br-md bg-background focus:ring-0 -z-[-2]"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-3 h-3" />
+                      )}
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Link
+            href="/forgot-password"
+            className="text-xs text-primary underline mb-4 block text-end"
+          >
+            Forgot Password?
+          </Link>
+          <Button
+            className="w-full cursor-pointer"
+            size="lg"
+            type="submit"
+            disabled={form.formState.isSubmitting}
+          >
+            Login
+          </Button>
         </form>
       </Form>
     </AuthWrapper>
