@@ -9,21 +9,28 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { resetPassword } from "@/lib/actions/auth/forgot-password";
 import { ResetPasswordInput, resetPasswordSchema } from "@/lib/validation/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff } from "lucide-react";
-import { signIn } from "next-auth/react";
-import Link from "next/link";
+import { Eye, EyeOff, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import AuthWrapper from "./AuthWrapper";
-import { resetPassword } from "@/lib/actions/auth/forgot-password";
 
-export default function ResetPassword({token}: {token: string}) {
+export default function ResetPassword({
+  token,
+  isValid,
+  message,
+}: {
+  token: string;
+  isValid: boolean;
+  message: string;
+}) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  console.log(isValid);
 
   const router = useRouter();
 
@@ -35,35 +42,45 @@ export default function ResetPassword({token}: {token: string}) {
     },
   });
 
-  const onSubmit = useCallback(async (data: ResetPasswordInput) => {
-    try {
-    
-      const res = await resetPassword({token, ...data});
+  const onSubmit = useCallback(
+    async (data: ResetPasswordInput) => {
+      try {
+        const res = await resetPassword({ token, ...data });
 
-      if (res?.success) {
-        toast.success("Password reset successful!");
-        router.push("/login");
-      } else {
-        toast.error(res.message || "Invalid code");
+        if (res?.success) {
+          toast.success("Password reset successful!");
+          router.push("/login");
+        } else {
+          toast.error(res.message || "Invalid code");
+        }
+      } catch {
+        toast.error("Something went wrong! try again later");
       }
-    } catch {
-      toast.error("Something went wrong! try again later");
+    },
+    [token, router]
+  );
+
+  useEffect(() => {
+    if (!isValid) {
+      setTimeout(() => toast.error(message), 0);
     }
-  }, [token, router]);
+  }, []);
   return (
-    <AuthWrapper
-      title="Welcome Back 👋"
-      subTitle="Log in to access your account"
-      variant="login"
-    >
+    <div className="flex flex-col gap-5 text-center">
+      <Button size="icon" variant="outline" className="size-12 self-center">
+        <Lock className="size-6" />
+      </Button>
+      <h1 className="text-3xl font-bold">Reset Password</h1>
+      <p className="text-sm text-muted-foreground">
+        Please enter your new password to reset your account.
+      </p>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-       
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="password"
             render={({ field }) => (
-              <FormItem className="mb-2">
+              <FormItem className="mb-4">
                 <FormLabel>Password</FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -111,7 +128,9 @@ export default function ResetPassword({token}: {token: string}) {
                       variant="outline"
                       size="icon"
                       className="absolute right-0 top-0  rounded-tl-none rounded-bl-none rounded-tr-md rounded-br-md bg-background focus:ring-0 -z-[-2]"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                     >
                       {showConfirmPassword ? (
                         <EyeOff className="w-4 h-4" />
@@ -125,7 +144,7 @@ export default function ResetPassword({token}: {token: string}) {
               </FormItem>
             )}
           />
-         
+
           <Button
             className="w-full cursor-pointer"
             size="lg"
@@ -136,6 +155,6 @@ export default function ResetPassword({token}: {token: string}) {
           </Button>
         </form>
       </Form>
-    </AuthWrapper>
+    </div>
   );
 }

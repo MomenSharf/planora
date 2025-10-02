@@ -3,6 +3,7 @@ import { Icons } from "../icons";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import Link from "next/link";
+import Google from "./Google";
 
 export default function AuthWrapper({
   title,
@@ -15,6 +16,8 @@ export default function AuthWrapper({
   variant: "login" | "signup";
   children: React.ReactNode;
 }) {
+
+
   return (
     <div className="h-full flex flex-col gap-3 max-w-xl">
       <div className="flex-1 flex flex-col justify-center items-center gap-3 ">
@@ -30,9 +33,7 @@ export default function AuthWrapper({
               Or Continue With
             </span>
           </div>
-          <Button className="gap-2 w-full" variant="outline" size="lg">
-            <Icons.google /> Google
-          </Button>
+         <Google />
         </div>
       </div>
       <div className="text-sm text-muted-foreground text-center">

@@ -33,7 +33,7 @@ export default function ForgotPassword() {
 
   const onSubmit = async (data: ForgotPasswordInput) => {
     try {
-  const res = await createAndSendPasswordResetToken(data.email)
+      const res = await createAndSendPasswordResetToken(data.email);
       // const res = await verifyCode(email!, data.code);
 
       if (res?.success) {
@@ -71,9 +71,11 @@ export default function ForgotPassword() {
               </FormItem>
             )}
           />
-          <Button type="submit">Send Reset Link</Button>
+          <Button type="submit" disabled={form.formState.isSubmitting}>
+            Send Reset Link
+          </Button>
           <Link
-            className={cn(buttonVariants({ variant: "link" }), 'w-full')}
+            className={cn(buttonVariants({ variant: "link" }), "w-full")}
             href="/login"
           >
             <ArrowLeft /> back to login

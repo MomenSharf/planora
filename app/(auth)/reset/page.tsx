@@ -15,15 +15,19 @@ export default async function page({
     return redirect("/login");
   }
 
-  const res = await verifyToken(token);
+  const verifyedtoken = await verifyToken(token);
 
-  if (!res.success) {
-    redirect("/login");
-  }
+  console.log(verifyToken);
+  
 
   return (
-    <div className="flex items-center justify-center h-full">
-      <ResetPassword token={token} />
+    <div className="flex flex-col items-center justify-center h-full">
+      <ResetPassword
+        token={token}
+        isValid={verifyedtoken?.success}
+        message={verifyedtoken.message}
+      />
+      <div className="h-10 w-full" />
     </div>
   );
 }

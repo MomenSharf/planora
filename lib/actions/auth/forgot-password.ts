@@ -31,7 +31,7 @@ export const createAndSendPasswordResetToken = async (email: string) => {
 
     const resetUrl = `${
       process.env.NEXT_PUBLIC_BASE_URL
-    }/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
+    }/reset?token=${token}&email=${encodeURIComponent(email)}`;
 
     const sendRes = await sendResetPasswordEmail(email, resetUrl);
     if (!sendRes.success) {
@@ -51,12 +51,12 @@ export const createAndSendPasswordResetToken = async (email: string) => {
 export const resetPassword = async ({
   token,
   password,
-  confirmPassword
+  confirmPassword,
 }: {
-  token: string,
-  password: string,
-  confirmPassword: string}
-) => {
+  token: string;
+  password: string;
+  confirmPassword: string;
+}) => {
   try {
     if (password !== confirmPassword) {
       return {
@@ -65,7 +65,7 @@ export const resetPassword = async ({
       };
     }
     const record = await db.verificationToken.findFirst({
-      where: {  token },
+      where: { token },
       orderBy: { createdAt: "desc" },
     });
 
@@ -77,6 +77,21 @@ export const resetPassword = async ({
       return { success: false, message: "Token expired, request a new one." };
     }
 
+    const user = await db.user.findUnique({
+      where: { email: record.email },
+    });
+
+    if (!user) {
+      return { success: false, message: "User not found." };
+    }
+
+    const isSamePassword = await bcrypt.compare(password, user.password ?? '');
+    if (isSamePassword) {
+      return {
+        success: false,
+        message: "New password must be different from the old one.",
+      };
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await db.user.update({
@@ -92,7 +107,6 @@ export const resetPassword = async ({
     return { success: false, message: "Failed to reset password." };
   }
 };
-
 
 export async function verifyToken(token: string) {
   try {
