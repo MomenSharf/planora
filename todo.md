@@ -6,17 +6,19 @@ Mark `[ ]` → `[x]` when done.
 ---
 
 ## Phase 1 – Foundations  
+
 - [ ✅ ] Initialize Next.js project with App Router  
 - [ ✅ ] Add TypeScript, TailwindCSS, ESLint, Prettier  
 - [ ✅ ] Install Prisma, NextAuth, and connect PostgreSQL  
 - [ ✅ ] Configure Prisma schema (User, Workspace, Project, Task, Comment)  
 - [ ✅ ] Set up NextAuth with Prisma adapter  
-- [ ] Implement authentication (Email/Password + OAuth option)  
-- [ ] Test signup, login, logout flows  
+- [ ✅ ] Implement authentication (Email/Password + OAuth option)  
+- [ ✅ ] Test signup, login, logout flows  
 
 ---
 
 ## Phase 2 – Core Features  
+
 - [ ] Create Workspace model + membership roles (Admin, Member, Guest)  
 - [ ] Implement "Create Workspace" UI & backend  
 - [ ] Add "Invite Members" feature  

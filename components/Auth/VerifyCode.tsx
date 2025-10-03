@@ -52,8 +52,8 @@ export default function VerifyCode({
       const res = await verifyCode(email!, data.code);
 
       if (res?.success) {
-        toast.success("Login successful!");
-        router.push("/");
+        toast.success("email verifyed successful!");
+        router.push("/login");
       } else {
         toast.error(res.message || "Invalid code");
       }

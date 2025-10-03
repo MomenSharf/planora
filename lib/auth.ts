@@ -58,12 +58,6 @@ export const authOptions: NextAuthOptions = {
           throw new Error("No user found with the provided credentials");
         }
 
-        // if (!user.emailVerified) {
-        //   throw new Error("Email not verified. Please verify your email.");
-        // }
-
-        //TODO: redirct to verification page if email not verified here
-
         // Verify the password
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
@@ -134,12 +128,27 @@ export const authOptions: NextAuthOptions = {
         // avatarColor: dbUser.avatarColor,
       };
     },
-    async signIn({ user }) {
-      console.log(user);
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        const existingUser = await db.user.findUnique({
+          where: { email: user.email! },
+        });
+
+        if (existingUser && existingUser.password) {
+          // 🚫 This email is already registered with credentials
+          throw new Error(
+            "This email is already registered with email & password. Please log in with credentials instead."
+          );
+          // Or: return "/login?error=UseCredentials"; // redirect with error code
+        }
+
+        return true;
+      }
 
       if (!user.emailVerified) {
         return `${process.env.NEXT_PUBLIC_BASE_URL}/verify?email=${user.email}`;
       }
+
       return true;
     },
     redirect({ url }) {

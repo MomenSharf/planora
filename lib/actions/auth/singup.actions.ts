@@ -16,21 +16,27 @@ export const SignUpAction = async (data: SignUpInput) => {
 
     const { email, name, password } = validatedData;
 
-    const userExists = await db.user.findFirst({
-      where: {
-        email,
-      },
+    const existingUser = await db.user.findUnique({
+      where: { email },
     });
 
-    if (userExists) {
+    if (existingUser) {
+      // Case: already registered with Google (no password saved)
+      if (!existingUser.password) {
+        return {
+          success: false,
+          message: "This email is already registered with Google. Please sign in with Google.",
+        };
+      }
+
+      // Case: already registered with credentials
       return {
         success: false,
-        message: "Email already is in use. Please try another one.",
+        message: "This email is already registered. Please sign in instead.",
       };
     }
 
     const lowerCaseEmail = email.toLowerCase();
-
     const hashedPassword = await hash(password, 10);
 
     const user = await db.user.create({
@@ -46,12 +52,11 @@ export const SignUpAction = async (data: SignUpInput) => {
     }
 
     const sendRes = await createAndSendVerificationCode(email);
-
     if (!sendRes.success) {
       return { success: false, message: sendRes.message };
     }
 
-    return { success: true, message: "Code sent to email." };
+    return { success: true, message: "Verification code sent to email." };
   } catch (error) {
     return handleError(error);
   }
