@@ -64,7 +64,7 @@ export default function ResetPassword({
     if (!isValid) {
       setTimeout(() => toast.error(message), 0);
     }
-  }, []);
+  }, [isValid, message]);
   return (
     <div className="flex flex-col gap-5 text-center">
       <Button size="icon" variant="outline" className="size-12 self-center">

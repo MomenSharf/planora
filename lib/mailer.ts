@@ -40,7 +40,8 @@ export const sendVerificationEmail = async (
 
     await transporter.sendMail(mailOptions);
     return { success: true, message: "Verification email sent" };
-  } catch (error) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error: unknown) {
     return { success: false, message: "Failed to send verification email" };
   }
 };
@@ -77,7 +78,8 @@ export const sendResetPasswordEmail = async (
 
     await transporter.sendMail(mailOptions);
     return { success: true, message: "Password reset email sent" };
-  } catch (error) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error: unknown) {
     return { success: false, message: "Failed to send password reset email" };
   }
 };

@@ -1,11 +1,10 @@
-import { Icons } from "@/components/icons";
-import { TextAlignJustify } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import NavigationMenuNav from "./NavigationMenu";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import Logo from "../Logo";
 import { getCurrentUser } from "@/lib/auth";
+import { cn } from "@/lib/utils";
+import { TextAlignJustify } from "lucide-react";
+import Link from "next/link";
+import Logo from "../Logo";
+import NavigationMenuNav from "./NavigationMenu";
 import SignOut from "./SignOut";
 
 export default async function Header() {

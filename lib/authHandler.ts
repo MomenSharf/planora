@@ -1,9 +1,9 @@
 // lib/authHandlers.ts
 "use client";
 
+import { LoginInput } from "@/lib/validation/auth"; // adjust path if needed
 import { signIn } from "next-auth/react";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { LoginInput } from "@/lib/validation/auth"; // adjust path if needed
 import { toast } from "sonner";
 
 export const handleLogin = async (
@@ -23,6 +23,7 @@ export const handleLogin = async (
     } else {
       toast.error(res?.error || "Invalid credentials");
     }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error: unknown) {
     toast.error("Something went wrong! Try again later");
   }

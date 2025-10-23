@@ -2,10 +2,10 @@ import React from "react";
 import Image from "next/image";
 
 export default function Logo({
-  withText,
+  withText= false,
   size = 50,
 }: {
-  withText: boolean;
+  withText?: boolean;
   size?: number;
 }) {
   return (

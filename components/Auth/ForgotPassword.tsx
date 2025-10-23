@@ -1,4 +1,5 @@
 "use client";
+import { createAndSendPasswordResetToken } from "@/lib/actions/auth/forgot-password";
 import { cn } from "@/lib/utils";
 import {
   ForgotPasswordInput,
@@ -9,6 +10,7 @@ import { ArrowLeft, Fingerprint } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { Button, buttonVariants } from "../ui/button";
 import {
   Form,
@@ -19,9 +21,6 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
-import { toast } from "sonner";
-import { sendResetPasswordEmail } from "@/lib/mailer";
-import { createAndSendPasswordResetToken } from "@/lib/actions/auth/forgot-password";
 
 export default function ForgotPassword() {
   const router = useRouter();
