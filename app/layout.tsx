@@ -1,11 +1,11 @@
 import "@/app/globals.css";
 
 import Providers from "./providers";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Nunito_Sans } from "next/font/google";
 
-const font = Plus_Jakarta_Sans({
+const font = Nunito_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "700"], // pick what you need
+  weight: ["400", "500", '600',"700"], 
 })
 export default function RootLayout({
   children,

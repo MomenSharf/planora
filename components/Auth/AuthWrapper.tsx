@@ -1,8 +1,6 @@
-import React from "react";
-import { Icons } from "../icons";
-import { Button } from "../ui/button";
-import { Separator } from "../ui/separator";
 import Link from "next/link";
+import React from "react";
+import { Separator } from "../ui/separator";
 import Google from "./Google";
 
 export default function AuthWrapper({

@@ -11,7 +11,7 @@ export default function Layout({
     <div className="grid grid-cols-1 sm:grid-cols-2 min-h-screen">
       <div className="flex flex-col p-3">
         <Link href="/">
-          <Logo />
+          <Logo withText  />
         </Link>
         <div className="flex-1">{children}</div>
       </div>

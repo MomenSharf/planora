@@ -16,8 +16,9 @@ model User {
   name          String?
   email         String?   @unique
   emailVerified DateTime?
-  image         String?
+  avatar         String?
   password      String?
+  themeColor String?
 
   accounts Account[]
   sessions Session[]
@@ -28,6 +29,7 @@ model User {
   // notifications Notification[]
   // activities    Activity[]
   // timeLogs      TimeLog[]
+  TeamMember  TeamMember[]
 }
 
 model Account {
@@ -67,8 +69,8 @@ model verificationToken {
 }
 
 model VerificationCode {
-  id    String @id @default(cuid())
-  email String
+  id        String   @id @default(cuid())
+  email     String
   code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
@@ -81,11 +83,12 @@ model VerificationCode {
 //
 
 model Workspace {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   description String?
-  image       String?
-  createdAt   DateTime @default(now())
+  avatar      String?
+
+  createdAt DateTime @default(now())
 
   useFor                 String?
   manageFor              String?
@@ -94,6 +97,17 @@ model Workspace {
   memberships Membership[]
   projects    Project[]
   Label       Label[]
+  Team        Team[]
+}
+
+model Space {
+  id          String  @id @default(cuid())
+  name        String?
+  icon        String?
+  description String?
+
+  DefaultRole Role       @default(MEMBER)
+  visibility  Visibility @default(PUBLIC)
 }
 
 model Membership {
@@ -127,7 +141,9 @@ model Project {
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  tasks Task[]
+  tasks  Task[]
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id])
 }
 
 enum Visibility {
@@ -207,6 +223,40 @@ model TaskLabel {
   label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
 
   @@id([taskId, labelId])
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  avatar      String?
+  createdAt   DateTime @default(now())
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  members TeamMember[]
+  Project Project[]
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  role      TeamRole @default(MEMBER)
+  createdAt DateTime @default(now())
+
+  userId String
+  teamId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+}
+
+enum TeamRole {
+  LEAD
+  MEMBER
+  VIEWER
 }
 
 //

@@ -12,7 +12,7 @@ export default async function Header() {
   const session = await getCurrentUser();
   return (
     <header>
-      <div className="flex items-center justify-between py-4 max-sm:p-2">
+      <div className="flex items-center justify-between py-1 max-sm:p-2">
         <Logo />
         <div>{session && session.user.name}</div>
         <div className="hidden lg:flex gap-1">
