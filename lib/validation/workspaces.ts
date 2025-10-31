@@ -1,3 +1,4 @@
+import { workspaceTypes } from "@/constants";
 import { z } from "zod";
 
 /**
@@ -8,3 +9,12 @@ export const joinWorkspace = z.object({
 });
 
 export type JoinWorkspace = z.infer<typeof joinWorkspace>;
+
+export const crateWorkspace = z.object({
+  name: z.string().min(3, "At least on charactor"),
+  description: z.string().min(15, "At least on charactor"),
+  type: z.enum([...workspaceTypes]),
+  invitationEmails: z.array(z.string().email()),
+});
+
+export type CrateWorkspace = z.infer<typeof crateWorkspace>;

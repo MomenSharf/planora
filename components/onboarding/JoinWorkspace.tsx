@@ -37,7 +37,7 @@ export default function JoinWorkspace() {
             render={({ field }) => (
               <FormItem className="mb-4 w-full">
                 <FormControl>
-                  <Input className='h-10' placeholder="Jion by invition code" {...field} disabled={form.formState.isSubmitting}/>
+                  <Input className='h-10' placeholder="Jion by invition link" {...field} disabled={form.formState.isSubmitting}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>

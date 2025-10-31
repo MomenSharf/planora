@@ -21,7 +21,7 @@ export default function AuthWrapper({
       <div className="flex-1 flex flex-col justify-center items-center gap-3 ">
         <div className="flex flex-col gap-4 mb-6">
           <div className="flex flex-col gap-3">
-            <p className="text-3xl font-extrabold">{title}</p>
+            <h1 className="text-3xl font-extrabold">{title}</h1>
             <p className="text-muted-foreground text-sm">{subTitle}</p>
           </div>
           <div className="flex-1">{children}</div>
