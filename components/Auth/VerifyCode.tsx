@@ -25,6 +25,7 @@ import { useCallback, useEffect, useState, useTransition } from "react";
 import Countdown from "react-countdown";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import Loader from "../Layout/Loader";
 
 export default function VerifyCode({
   email,
@@ -143,7 +144,7 @@ export default function VerifyCode({
 
           <div className="flex justify-center">
             {form.formState.isSubmitting ? (
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+             <Loader isLoading={form.formState.isSubmitting} />
             ) : (
               <p className="text-xs text-muted-foreground flex items-center">
                 Didn&apos;t receive a code?

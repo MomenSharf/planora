@@ -1,17 +1,12 @@
 import CreateWorkspace from "@/components/CreateWorkspace/CreateWorkspace";
+import { getCurrentUser } from "@/lib/auth";
 import React from "react";
 
-export default function page() {
+export default async function page() {
+  const session = await getCurrentUser();
   return (
-    <div className="flex flex-col gap-5 w-full  sm:p-6">
-      <div>
-
-      <p className="text-3xl font-extrabold">Create Your Workspace</p>
-      <p className="text-muted-foreground text-sm">
-        Organize your team, projects, and goals — all in one shared space.
-      </p>
-      </div>
-      <CreateWorkspace />
+    <div className="flex flex-col gap-5  sm:p-6">
+      <CreateWorkspace user={session?.user} />
     </div>
   );
 }

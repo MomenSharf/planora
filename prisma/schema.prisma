@@ -1,41 +1,49 @@
-// schema.prisma
-// Project Management App (ClickUp / Jira style)
-// NextAuth compatible + Full Features
-
+// ===========================
+//  GENERATOR & DATASOURCE
+// ===========================
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  // uncomment next line if you use Prisma <5.10
-  directUrl = env("DATABASE_URL_UNPOOLED")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // pooled connection (primary)
+  // directUrl = env("DATABASE_URL_UNPOOLED") // unpooled for migrations
 }
 
+// ===========================
+//  USER & AUTHENTICATION MODELS
+// ===========================
+
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id @default(uuid())
   name          String?
-  email         String?   @unique
+  email         String    @unique
   emailVerified DateTime?
-  avatar         String?
   password      String?
-  themeColor String?
+  avatar        String?
+  themeColor    String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLogin     DateTime?
 
-  accounts Account[]
-  sessions Session[]
+  // Relations
+  accounts        Account[]
+  sessions        Session[]
+  memberships     Membership[]
+  comments        Comment[]
+  assignedTasks   Task[]            @relation("AssignedTasks")
+  teamMemberships TeamMember[]
+  workspace       Workspace[]
+  project         Project[]
+  workspaceInvite WorkspaceInvite[]
+  activityLog     ActivityLog[]
 
-  memberships Membership[]
-  tasks       Task[]       @relation("AssignedTasks")
-  comments    Comment[]
-  // notifications Notification[]
-  // activities    Activity[]
-  // timeLogs      TimeLog[]
-  TeamMember  TeamMember[]
+  @@index([email])
 }
 
 model Account {
-  id                String  @id @default(cuid())
+  id                String   @id @default(uuid())
   userId            String
   type              String
   provider          String
@@ -47,136 +55,253 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
+  createdAt         DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
   sessionToken String   @unique
   userId       String
   expires      DateTime
+  createdAt    DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
-model verificationToken {
-  id        String   @id @default(cuid())
-  email     String
-  token     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-}
-
+// Used for email-based verification (magic link or OTP)
 model VerificationCode {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   email     String
   code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
+
+  @@index([email])
 }
 
-//
-// ========================
-// CORE MODELS
-// ========================
-//
+// ===========================
+//  WORKSPACE & MEMBERSHIP
+// ===========================
 
 model Workspace {
-  id          String  @id @default(cuid())
-  name        String
-  description String?
-  avatar      String?
-
-  createdAt DateTime @default(now())
-
-  useFor                 String?
+  id                     String   @id @default(uuid())
+  name                   String
+  slug                   String   @unique
+  description            String?
+  avatar                 String?
+  hasCompletedOnboarding Boolean  @default(false)
   manageFor              String?
-  hasCompletedOnboarding Boolean @default(false)
+  useFor                 String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  createdById            String?
 
+  // Relations
+  createdBy   User?             @relation(fields: [createdById], references: [id])
   memberships Membership[]
   projects    Project[]
-  Label       Label[]
-  Team        Team[]
-}
+  labels      Label[]
+  teams       Team[]
+  invites     WorkspaceInvite[]
+  activityLog ActivityLog[]
 
-model Space {
-  id          String  @id @default(cuid())
-  name        String?
-  icon        String?
-  description String?
-
-  DefaultRole Role       @default(MEMBER)
-  visibility  Visibility @default(PUBLIC)
+  @@index([createdById])
 }
 
 model Membership {
-  id        String   @id @default(cuid())
-  role      Role     @default(MEMBER)
-  createdAt DateTime @default(now())
-
+  id          String   @id @default(uuid())
   userId      String
   workspaceId String
+  role        Role     @default(MEMBER)
+  joinedAt    DateTime @default(now())
 
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([userId, workspaceId])
+  @@index([workspaceId])
 }
 
-enum Role {
-  OWNER
-  ADMIN
-  MEMBER
-  GUEST
-}
+// ===========================
+//  PROJECTS, TASKS & LABELS
+// ===========================
 
 model Project {
-  id          String     @id @default(cuid())
+  id          String     @id @default(uuid())
   name        String
   description String?
   visibility  Visibility @default(PRIVATE)
   createdAt   DateTime   @default(now())
-
+  updatedAt   DateTime   @updatedAt
   workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdById String?
+  teamId      String?
 
-  tasks  Task[]
-  teamId String?
-  team   Team?   @relation(fields: [teamId], references: [id])
-}
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation(fields: [createdById], references: [id])
+  team      Team?     @relation(fields: [teamId], references: [id])
+  tasks     Task[]
 
-enum Visibility {
-  PUBLIC
-  PRIVATE
+  @@index([workspaceId])
 }
 
 model Task {
-  id          String       @id @default(cuid())
+  id          String       @id @default(uuid())
   title       String
   description String?
   status      TaskStatus   @default(TODO)
   priority    TaskPriority @default(MEDIUM)
   dueDate     DateTime?
   createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  projectId   String
+  assigneeId  String?
+  parentId    String?
 
-  projectId String
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  assigneeId String?
-  assignee   User?   @relation("AssignedTasks", fields: [assigneeId], references: [id])
-
-  // Self-relation for subtasks
-  parentId String?
-  parent   Task?   @relation("SubTasks", fields: [parentId], references: [id])
-  subtasks Task[]  @relation("SubTasks")
-
+  // Relations
+  project  Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee User?       @relation("AssignedTasks", fields: [assigneeId], references: [id])
+  parent   Task?       @relation("SubTasks", fields: [parentId], references: [id])
+  subtasks Task[]      @relation("SubTasks")
   comments Comment[]
   labels   TaskLabel[]
-  // activities Activity[]
-  // timeLogs   TimeLog[]
+
+  @@index([projectId])
+  @@index([assigneeId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  taskId    String
+  userId    String
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+model Label {
+  id          String @id @default(uuid())
+  name        String
+  color       String
+  workspaceId String
+
+  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  tasks     TaskLabel[]
+
+  @@unique([workspaceId, name])
+}
+
+model TaskLabel {
+  taskId  String
+  labelId String
+
+  label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  task  Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, labelId])
+}
+
+// ===========================
+//  TEAMS
+// ===========================
+
+model Team {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  avatar      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  workspaceId String
+
+  workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  projects  Project[]
+  members   TeamMember[]
+
+  @@unique([workspaceId, name])
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  role      TeamRole @default(MEMBER)
+  createdAt DateTime @default(now())
+  userId    String
+  teamId    String
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+}
+
+// ===========================
+//  INVITES & ACTIVITY LOG
+// ===========================
+
+model WorkspaceInvite {
+  id          String   @id @default(uuid())
+  email       String
+  role        Role     @default(MEMBER)
+  workspaceId String
+  invitedById String
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy User      @relation(fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, email])
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  userId      String
+  workspaceId String
+  entityType  String
+  entityId    String
+  action      String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+// ===========================
+//  MISC MODELS
+// ===========================
+
+model VerificationToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+  GUEST
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
 }
 
 enum TaskStatus {
@@ -194,109 +319,8 @@ enum TaskPriority {
   URGENT
 }
 
-model Comment {
-  id        String   @id @default(cuid())
-  content   String
-  createdAt DateTime @default(now())
-
-  taskId String
-  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Label {
-  id    String @id @default(cuid())
-  name  String
-  color String
-
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  tasks TaskLabel[]
-}
-
-model TaskLabel {
-  taskId  String
-  labelId String
-
-  task  Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
-
-  @@id([taskId, labelId])
-}
-
-model Team {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  avatar      String?
-  createdAt   DateTime @default(now())
-
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  members TeamMember[]
-  Project Project[]
-}
-
-model TeamMember {
-  id        String   @id @default(cuid())
-  role      TeamRole @default(MEMBER)
-  createdAt DateTime @default(now())
-
-  userId String
-  teamId String
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, teamId])
-}
-
 enum TeamRole {
   LEAD
   MEMBER
   VIEWER
 }
-
-//
-// ========================
-// ADVANCED FEATURES
-// ========================
-//
-
-// model Notification {
-//   id        String   @id @default(cuid())
-//   message   String
-//   read      Boolean  @default(false)
-//   createdAt DateTime @default(now())
-
-//   userId String
-//   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-// }
-
-// model Activity {
-//   id        String   @id @default(cuid())
-//   action    String   // e.g., "CREATED_TASK", "UPDATED_STATUS"
-//   createdAt DateTime @default(now())
-
-//   taskId String?
-//   task   Task? @relation(fields: [taskId], references: [id], onDelete: Cascade)
-
-//   userId String
-//   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-// }
-
-// model TimeLog {
-//   id        String   @id @default(cuid())
-//   hours     Float
-//   createdAt DateTime @default(now())
-
-//   taskId String
-//   task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
-
-//   userId String
-//   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-// }

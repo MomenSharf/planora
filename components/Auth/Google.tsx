@@ -5,7 +5,8 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Icons } from "../icons";
-import { Loader } from "lucide-react";
+import Loader from "../Layout/Loader";
+// import { Loader } from "lucide-react";
 
 export default function Google() {
   const [isPendiug, startTransition] = useTransition();
@@ -30,7 +31,7 @@ export default function Google() {
       disabled={isPendiug}
     >
       {isPendiug ? (
-        <Loader className="w-7 h-7 animate-spin text-muted-foreground" />
+        <Loader isLoading={isPendiug}/>
       ) : (
         <Icons.google />
       )}

@@ -10,11 +10,13 @@ export const joinWorkspace = z.object({
 
 export type JoinWorkspace = z.infer<typeof joinWorkspace>;
 
-export const crateWorkspace = z.object({
-  name: z.string().min(3, "At least on charactor"),
-  description: z.string().min(15, "At least on charactor"),
-  type: z.enum([...workspaceTypes]),
-  invitationEmails: z.array(z.string().email()),
+export const crateWorkspaceSchema = z.object({
+  name: z.string().min(3, "At least one character"),
+  description: z.string().min(10, "At least 10 character"),
+  type: z.enum([...workspaceTypes], {
+    message: "Please select a workspace type",
+  }),
+  invitationEmails: z.array(z.string().email("invalid mail address")),
 });
 
-export type CrateWorkspace = z.infer<typeof crateWorkspace>;
+export type CrateWorkspaceSchema = z.infer<typeof crateWorkspaceSchema>;

@@ -1,8 +1,10 @@
-import { CrateWorkspace } from "@/lib/validation/workspaces";
-import React from "react";
+import { workspaceTypes } from "@/constants";
+import { toCapitalize } from "@/lib/utils/string";
+import { CrateWorkspaceSchema } from "@/lib/validation/workspaces";
+import { ChevronRight } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
+import { Button } from "../ui/button";
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
@@ -10,9 +12,6 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { toast } from "sonner";
-import { Textarea } from "../ui/textarea";
 import {
   Select,
   SelectContent,
@@ -20,109 +19,94 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { workspaceTypes } from "@/constants";
-import { toCapitalize } from "@/lib/utils/string";
+import { Textarea } from "../ui/textarea";
 
 export default function WorkspaceInfoForm({
   form,
   onNext,
 }: {
-  form: UseFormReturn<CrateWorkspace>;
+  form: UseFormReturn<CrateWorkspaceSchema>;
   onNext: () => void;
 }) {
-  const onSubmit = async (data: CrateWorkspace) => {
-    try {
-      // const res = await signIn("credentials", {
-      //   redirect: false,
-      //   email: data.email,
-      //   password: data.password,
-      // });
-      // console.log(res);
-      // if (res?.ok) {
-      //   if (res.url) {
-      //     // router.push(res.url);
-      //   } else {
-      //     toast.success("Login successful!");
-      //   }
-      // } else {
-      //   toast.error(res?.error || res?.error || "Invalid credentials");
-      // }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error: unknown) {
-      toast.error("Something went wrong! try again later");
-    }
+  const handleNext = async () => {
+    const isValid = await form.trigger(["name", "type", "description"], {
+      shouldFocus: true,
+    }); // validate these fields only
+    if (isValid) onNext();
   };
+
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-2 max-w-md"
-      >
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem className="mb-4">
-              <FormLabel>Workspace Name</FormLabel>
+    <div className="flex flex-col gap-3 sm:p-6">
+      <div>
+        <h1 className="text-2xl font-extrabold">Create Your Workspace</h1>
+        <p className="text-muted-foreground text-sm">
+          Organize your team, projects, and goals — all in one shared space.
+        </p>
+      </div>
+
+      <FormField
+        control={form.control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Workspace Name</FormLabel>
+            <FormControl>
+              <Input placeholder="Planora Studio..." {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="type"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Workspace Type</FormLabel>
+            <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
-                <Input placeholder="Planora Studio..." {...field} />
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a type" />
+                </SelectTrigger>
               </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Workspace Type</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {workspaceTypes.map((type) => (
-                    <SelectItem value={type} key={type}>
-                      {toCapitalize(type)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem className="mb-2">
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Manage projects and team tasks" className="resize-none min-h-10"/>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        {/* <Link
-            href="/forgot"
-            className="text-xs text-primary underline mb-4 block text-end"
-          >
-            Forgot Password?
-          </Link> */}
-        <Button
-          className="w-full cursor-pointer"
-          size="lg"
-          type="submit"
-          disabled={form.formState.isSubmitting}
-        >
-          Continue
+              <SelectContent>
+                {workspaceTypes.map((type) => (
+                  <SelectItem value={type} key={type}>
+                    {toCapitalize(type)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="description"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Description</FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="Manage projects and team tasks..."
+                className="resize-none h-24"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <div className="flex justify-end mt-4">
+        <Button size="lg" type="button" onClick={handleNext}>
+          Next
+          <ChevronRight />
         </Button>
-      </form>
-    </Form>
+      </div>
+    </div>
   );
 }
